@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISR Command Center</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --text-color: #e0e0e0;
+            --heading-color: #f1f1f1;
+            --question-box-bg: #1e1e1e;
+            --question-box-color: #e0e0e0;
+            --active-question-box-bg: #006ed2;
+            --answer-bg: #0000FF;
+            --script-bg: #2c2c2c;
+            --accordion-bg: #2c2c2c;
+            --accordion-color: #e0e0e0;
+            --accordion-active-bg: #006ed2;
+            --panel-bg: #2c2c2c;
+            --counter-bg: #1e1e1e;
+            --counter-color: #e0e0e0;
+            --counter-border: #1e1e1e;
+            --counter-button-bg: #ffffff;
+            --counter-button-color: #000000;
+            --counter-button-active-bg: #2e7d32;
+            --toggle-button-bg: #1e1e1e;
+            --toggle-button-color: #e0e0e0;
+            --toggle-button-hover-bg: #2e7d32;
+            --call-notes-bg: #2c2c2c;
+            --call-notes-color: #e0e0e0;
+            --call-notes-button-bg: #ffffff;
+            --call-notes-button-color: #000000;
+            --call-notes-button-hover-bg: #2e7d32;
+            --group-header-color: #ffffff;
+            --group-deposit-color: #f70000;
+            --group-callback-color: #66b2ff;
+            --group-cost-color: #ffcc66;
+            --group-location-color: #66ff66;
+            --group-medical-color: #00008B;
+            --group-general-color: #00cdac;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 30px;
+            margin: 0;
+            box-sizing: border-box;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            flex-wrap: wrap;
+            position: relative;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .header img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--heading-color);
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #444;
+        }
+
+        p, li, label, button {
+            color: var(--text-color);
+        }
+
+        .question-box {
+            border-radius: 10px;
+            width: 100%;
+            border: 1px solid #444;
+            padding: 7.5px;
+            margin: 3px;
+            cursor: pointer;
+            background-color: var(--question-box-bg);
+            color: var(--question-box-color);
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+            box-sizing: border-box;
+            transform: scale(1.02);
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 0.75em;
+        }
+
+        .question-box.active {
+            background-color: var(--active-question-box-bg);
+        }
+
+        .answer {
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            background-color: var(--answer-bg);
+            border: 1px solid #444;
+            padding: 13px;
+            z-index: 1000;
+            cursor: pointer;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.3em;
+        }
+
+        body.active-answer {
+            overflow: hidden;
+        }
+
+        .script-container {
+            width: 100%;
+            background-color: var(--script-bg);
+            padding: 20px;
+            box-sizing: border-box;
+            display: none;
+            flex-direction: column;
+        }
+
+        .script-section {
+            margin-bottom: 10px;
+        }
+
+        .accordion {
+            background-color: var(--accordion-bg);
+            color: var(--accordion-color);
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.3s;
+            font-size: 0.9em;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .accordion:hover,
+        .accordion.active {
+            background-color: var(--accordion-active-bg);
+        }
+
+        .panel {
+            padding: 0 12px;
+            background-color: var(--panel-bg);
+            display: none;
+            overflow: hidden;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .group-container {
+            display: flex;
+            flex-direction: column;
+            margin: 0 10px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 31%;
+            box-sizing: border-box;
+        }
+
+        .questions-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .group-header {
+            font-size: 1em;
+            margin-bottom: 5px;
+            color: var(--group-header-color);
+            font-weight: bold;
+        }
+
+        .group-deposit .group-header { color: var(--group-deposit-color); }
+        .group-callback .group-header { color: var(--group-callback-color); }
+        .group-cost .group-header { color: var(--group-cost-color); }
+        .group-location .group-header { color: var(--group-location-color); }
+        .group-medical .group-header { color: var(--group-medical-color); }
+        .group-general .group-header { color: var(--group-general-color); }
+
+        .record-container, .call-notes-container {
+            width: 48%;
+        }
+
+        .counter-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .counter {
+            background-color: var(--counter-bg);
+            color: var(--counter-color);
+            border: 2px var(--counter-border);
+            border-radius: 10px;
+            padding: 7px;
+            text-align: center;
+            margin-bottom: 10px;
+            width: 48%;
+            font-size: 0.9em;
+        }
+
+        .counter-button {
+            background-color: var(--counter-button-bg);
+            color: var(--counter-button-color);
+            border: 1px solid #000000;
+            padding: 3px 7px;
+            margin: 2px;
+            cursor: pointer;
+            transform: scale(1.02);
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 0.75em;
+        }
+
+        .counter-button:active {
+            background-color: var(--counter-button-active-bg);
+        }
+
+        .toggle-button {
+            background-color: var(--toggle-button-bg);
+            border: none;
+            padding: 7px 15px;
+            cursor: pointer;
+            color: var(--toggle-button-color);
+            font-size: 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .toggle-button:hover {
+            background-color: var(--toggle-button-hover-bg);
+            transform: scale(1.05);
+        }
+
+        .call-notes-container label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--call-notes-label-color, #c7c7c7);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .call-notes-container textarea {
+            width: 100%;
+            height: auto;
+            min-height: 100px;
+            resize: vertical;
+            box-sizing: border-box;
+            padding: 7px;
+            background-color: var(--call-notes-bg);
+            border: 1px solid #444;
+            color: var(--call-notes-color);
+            font-family: Arial, sans-serif;
+            font-size: 0.9em;
+        }
+
+        .call-notes-container button {
+            background-color: var(--call-notes-button-bg);
+            border: 1px solid #000000;
+            padding: 7px;
+            cursor: pointer;
+            margin-right: 5px;
+            color: var(--call-notes-button-color);
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 0.75em;
+        }
+
+        .call-notes-container button:hover {
+            background-color: var(--call-notes-button-hover-bg);
+        }
+
+        #volume-bar {
+            width: 100%;
+            height: 20px;
+            background-color: gray;
+            margin-top: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            display: none;
+        }
+
+        #volume-level {
+            height: 100%;
+            background-color: green;
+            width: 0;
+        }
+
+        #datetime {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 25px;
+            background-color: #333;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .question-box:hover {
+            transform: scale(1.05);
+            background-color: var(--question-box-hover-bg, #006ed2);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .counter-container, .record-container, .call-notes-container {
+                position: static;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .questions-container {
+                flex-direction: column;
+            }
+
+            .toggle-button {
+                position: static;
+                margin-bottom: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        .customization-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: grey;
+            color: black;
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .customization-panel label {
+            display: block;
+            margin-bottom: 5px;
+            color: black;
+        }
+
+        .customization-panel input {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .customization-panel button {
+            background-color: white;
+            color: black;
+            border: 1px solid black;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .customization-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: var(--toggle-button-bg);
+            color: var(--toggle-button-color);
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="datetime"></div>
+    <button class="customization-toggle" onclick="toggleCustomizationPanel()">Customize Colors</button>
+    <div class="customization-panel" id="customization-panel">
+        <h3>Customize Colors</h3>
+        <label for="background-color">Background:</label>
+        <input type="color" id="background-color" value="#121212">
+        <label for="text-color">Text:</label>
+        <input type="color" id="text-color" value="#e0e0e0">
+        <label for="heading-color">Heading:</label>
+        <input type="color" id="heading-color" value="#f1f1f1">
+        <label for="question-box-bg">Question Box:</label>
+        <input type="color" id="question-box-bg" value="#1e1e1e">
+        <label for="question-box-color">Question Text:</label>
+        <input type="color" id="question-box-color" value="#e0e0e0">
+        <label for="active-question-box-bg">Active Question Box:</label>
+        <input type="color" id="active-question-box-bg" value="#006ed2">
+        <label for="answer-bg">Answer Background:</label>
+        <input type="color" id="answer-bg" value="#0000FF">
+        <button onclick="applyCustomColors()">Apply</button>
+    </div>
+    <div class="container">
+        <div class="header">
+            <img src="Nuvia_logo.png" alt="Nuvia Logo">
+            <h1>Nuvia ISR Command Center</h1>
+        </div>
+
+        <button class="toggle-button" onclick="toggleScript()">Toggle Script</button>
+        <div class="script-container" id="script-container">
+            <div class="script-section">
+                <button class="accordion">1. ENGAGEMENT</button>
+                <div class="panel">
+                    <p><strong>ISR:</strong><br> “Hi, is this LEAD NAME?”</p>
+                    <p><strong>Lead:</strong><br> “Yes, who’s this?”</p>
+                    <p><strong>ISR:</strong><br>“Hi LEAD NAME, this is NAME with Nuvia Dental Implant Center. I saw that you filled out one of our forms inquiring about dental implants, so I’m calling to get a better understanding of your situation and what you’ve been going through. I see on the form that you're missing multiple teeth. Can you tell me a little bit more about what’s been going on?”</p>
+                    <p>Lead responds, then guide call into Discovery</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">2. DISCOVERY</button>
+                <div class="panel">
+                    <h3>ORAL HEALTH SPIRAL SCRIPTS</h3>
+                    <p><strong>MISSING MULTIPLE TEETH</strong></p>
+                    <p>“What about the condition of your other teeth, what's going on there?”</p>
+                    <p><strong>LEAD RESPONDS</strong></p>
+                    <p>“Well that's the thing about our teeth, when they start to go bad, it starts to develop into more and more problems leading to more infection, pain, additional teeth falling out, etc. And the longer teeth are missing the more bone loss and higher likelihood of not being able to get your smile back. That’s why I want to get you into the consultation to make sure you’re a candidate.”</p>
+                    <p><strong>Or</strong></p>
+                    <p><strong>MISSING ALL THEIR TEETH</strong></p>
+                    <p>“How long have you been missing your teeth?”</p>
+                    <p><strong>LEAD RESPONDS</strong></p>
+                    <p>“Well that's the thing about missing teeth, the longer teeth are missing the more bone loss and higher likelihood of not being able to get their smile back. That’s why I want to get you into the consultation to make sure you’re a candidate”</p>
+                    <p>(Redirect to ‘Discovering their Why’)</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">3. PAIN POINTS,VALUE STATEMENTS, AND FINDING THEIR WHY!</button>
+                <div class="panel">
+                    <h3>Discovery:</h3>
+                    <h3>Discovery - Pain Points and Value Statements</h3>
+                    <h4>I. Chewing/Diet</h4>
+                    <p>“I see here on the form that you are struggling with your (diet/ ability to chew.) Can you expand on that?</p>
+                    <p><strong>Example Questions to Dig:</strong></p>
+                    <ul>
+                        <li>“How is this affecting your ability to chew?”</li>
+                        <li>“Which foods are you having to avoid?”</li>
+                        <li>“So how are you chewing then?”</li>
+                    </ul>
+                    <p><strong>Diet Value Statement:</strong></p>
+                    <p>“Chewing is the start of our digestive system, and when you can’t chew right you aren’t able to eat as healthy or digest properly. In the consultation, we’ll give you more information on how our permanent teeth in 24 Hours will get you back to eating the foods you want.”</p>
+                    <h4>II. PAIN SCRIPT</h4>
+                    <p>“But with that said I also see here on the form that you are experiencing some pain. Can you expand on that?”</p>
+                    <p><strong>LEAD RESPONDS</strong></p>
+                    <p><strong>Example Questions to Dig:</strong></p>
+                    <ul>
+                        <li>“Is the pain constant or is it mainly when you eat?”</li>
+                        <li>“How painful is it on a scale of 1 to 10?”</li>
+                        <li>“How does that pain affect you on a day to day basis?”</li>
+                    </ul>
+                    <p><strong>Pain Value Statement:</strong></p>
+                    <p>“Pain is an indicator of infection in the mouth. In your consultation, they’ll take a 3D x-ray and they’ll be able to see the amount of infection that is present, and we can talk to you about treatment options”</p>
+                    <h4>III. CONFIDENCE SCRIPT</h4>
+                    <p>“I see here on the form that you are experiencing a lack of confidence in your smile. Can you expand on that?”</p>
+                    <p><strong>Example Questions to Dig:</strong></p>
+                    <ul>
+                        <li>“How is this all affecting you socially?”</li>
+                    </ul>
+                    <p><strong>Confidence Value Statement:</strong></p>
+                    <p>“I don’t know if you’ve seen our videos online, but you can see how much people’s confidence changes literally overnight. In the consultation they’ll actually show you a digital mockup of what your smile could look like in 24 hours”</p>
+                    </ul>
+                    <p><strong>Lead Responds</strong></p> 
+                    </ul>
+                    <p>“Okay so you are [PAIN POINT]. How does it affect you on a daily basis?”</p>                       
+                    </ul>
+                    <h3>Discovery - GETTING THE WHY</h3>                    
+                    <p><strong>GET THERE WHY!!!</strong>
+                    <p>“Okay, now that I have a good understanding of your situation, what is the main reason you are looking into getting your smile fixed?”</p>                                
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">4. LABEL SUMMARY</button>
+                <div class="panel">
+                    <p>“So it sounds like you [INSERT WHY]. Is that right?”</p>
+                    <p>Absolutely, this impacts many areas of your life, including mental health, self-image, and relationships. Dental implants are a permanent solution that can restore your smile and improve your quality of life. It really sounds like you would be a great candidate.</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">5. SCHEDULING - REGULAR</button>
+                <div class="panel">
+                    <p>“The first step is to come in for a consultation here in (location). The consultation really serves as a discovery period where we can take CT-Scans, get you a treatment plan, and answer any questions you might have.</p>
+                    <p>Do mornings or afternoons work better for you?” * get them in within 48 hour</p>
+                    <p>“Awesome, we just had ______ or ______ open up. Which works best?”</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">5A. SCHEDULING UNICORN SCRIPT</button>
+                <div class="panel">
+                    <p>“The first step is to come in for a consultation here in (location). The consultation really serves as a discovery period where we can take CT-Scans, get you a treatment plan, and answer any questions you might have.</p>
+                    <p>Do mornings or afternoons work better for you?</p>
+                    <p>LEAD RESPONDS</p>
+                    <p>ISR: Ok great, We do prioritize those who schedule within 24 hours and normally, our consultations cost $350. But we have vouchers that I can offer for new patients that will cover the cost of the entire consultation for those who do come in within that 24 hour window. I have today at_________ or (insert next working day) at _________, which would work best?</p>
+                    <p>If within 24 hours, continue to offer and close. If outside of 24 hours, set a time and date, and proceed to refundable deposit explanation/ If Schedule is FULL...Go to Refundable Deposit Explination and use the correct Script for Schedule is full and Proceed:</p>
+                    <p>* rebuttal any scheduling conflicts outside of 24 hours, offer different times or try a same day set.</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">6. DEPOSIT AND CLOSE - REGULAR SCRIPT</button>
+                <div class="panel">
+                    <p>“Great, and this number I called you on is a good number to send you a text?</p>
+                    <p>Awesome, I am going to send you two text messages, one is going to have the day, time and address for your appointment. The second will have your voucher which covers the cost of the consultation and CT Scan and will also get you that 10% discount off of treatment if you decide to move forward with treatment.</p>
+                    <p>Now with your appointment we reserve the entire office and staffs time for a whole hour so it’s important that everyone shows up for their appointment. For that reason we do ask you to reserve your appointment with an $89 deposit, which is refunded back to you when you come in for your appointment. Would you like to do that with a debit or credit card?”</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">6A. OFFER AND CLOSE - UNICORN SCRIPT</button>
+                <div class="panel">
+                    <p>“When we schedule an appointment we reserve the entire office and staffs time for a whole hour just for you “name”. So, it’s really important that you show up for this appointment. I just want to double check; you can make it right?”</p>
+                    <p>(wait for yes)</p>
+                    <p>“Alright, fantastic! We have over 1,000 people trying to visit us each week, so we can't accommodate reschedules or no-shows. So like i mentioned, we provide a one-time voucher code that covers the entire cost of the $350 consultation and CT scan, so your appointment is no out of pocket cost to you. I do need to let you know this voucher is only valid for your appointment on [Date and Time]. If you miss this appointment and wanted to come in again, you would need to pay the full $350 consultation fee.</p>
+                    <p>“I’ll send you an appointment confirmation and the address. We’re excited to see you!”</p>
+                    <p>(Make sure there is really good patient acknowledgment before moving on)</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">7. REFUNDABLE DEPOSIT EXPLANATION/OUTSIDE OF 24 HOURS / Or SCHEDULE IS FULL - UNICORN SCRIPT</button>
+                <div class="panel">
+                    <H4>Outside of 24 Hours</H4>
+                    <p>Ok, great, we do prioritize those who want to schedule within 24 hours but we know sometimes it is tough for others, so for those who can’t make it within 24 hours, we can still secure the voucher for you, we just require a Refundable Reservation deposit of $89. It is fully refundable and we give that right back to you when you show up for your appointment..which is why the majority of our patients choose to come in within 24 hours so are you sure either of those times won’t work?</p>
+                    <p><strong>( Set time (Next Avail preferably) and then proceed to voucher and spoucher after you get the card!)</strong></p>
+                    </ul>
+                    <H4>IF SCHEDULE IF FULL OUTSIDE OF 24HRS</H4>
+                    <p>Ok great ,  We do prioritize those who schedule within 24  hours and normally, our consultations cost $350. But we have vouchers that I can offer for new patients that will cover the cost of the entire consultation for those who do come in within that 24 hour window…<p>
+                    </ul>
+                    <p>but unfortunately all of those slots are booked so I have a TIME SLOT A or TIME SLOT B available on 48 HOUR DAY.  Which one works better for you?<p> 
+                    </ul>
+                    <p>Great! So like I said, for those who can’t make it within 24 hours, we can still secure the voucher for you, we just require a Refundable Reservation Deposit of $89.  It is fully refundable and we give that right back to you when you show up for your appointment..so we do that with a credit or a debit card, which would work for you?<p>
+                    <p><strong>( Set time (Next Avail preferably) and then proceed to voucher and spoucher after you get the card!)</strong></p>
+               </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">7A. DEPOSIT SCRIPT (IF NEEDED, OUTSIDE THE 24H WINDOW)- UNICORN SCRIPT</button>
+                <div class="panel">
+                    <p>Now with your appointment being a few days out, like I said, we reserve the entire office and staffs time for a whole hour so it’s important that everyone shows up for their appointment. For that reason we do ask you to reserve your appointment with an $89 deposit, which is refunded back to you when you come in for your appointment. Would you like to do that with a debit or credit card?</p>
+                    <p><strong>Get card then move to Voucher and Spoucher.</strong></p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">8. VOUCHER</button>
+                <div class="panel">
+                    <p>Goal: To make sure they understand that to qualify for the 10% discount they can’t reschedule or not show up to their first appointment. Ultimately we want them to show up for their appointment</p>
+                    <p>“As you can imagine we have had an overwhelming response to this voucher, with how many people we have trying to come in we are unable to accommodate reschedules and no shows. For that reason, to qualify for that one time 10% discount you must show up to your consultation on {date and time} without rescheduling.”**</p>
+                    <p>**This is our win marker for Balto so make sure to say this after every set</p>
+                    <h4>GROUP CONSULT VOUCHER(NATIONAL)</h4>
+                    <p>“By the way… now is a great time because we have a special one time discount offer for attendees only. Our office staff is setting aside specific time just for you and a few others who will be attending and due to the overwhelming response we have had to this group invite we are unable to accommodate reschedules and no shows so please make sure you are there so you qualify for that. Can you commit to showing up for your appointment?”</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">9. SPOUCHER(IN OFFICE)</button>
+                <div class="panel">
+                    <p>Goal: To make sure that if there is a spouse or significant other involved in the decision making process they show up and will receive a $100.</p>
+                    <p>“Oh hey! ……Last thing……. the doctor does ask that if you have a spouse or significant other, that they attend the consultation with you, so we do offer a $100 Amazon gift card for bringing them with you to this appointment. Who should we put in the notes that will be coming with you on __________?”</p>
+                    <h4>SPOUCHER FOR NATIONAL</h4>
+                    <p>“Oh hey! ……Last thing……. the doctor does ask that if you have a spouse or significant other, that they attend the entire consultation with you, and if they do we offer a $100 Amazon gift card for having them attend. Who should we put in the notes that will be on the consultation with you on __________?”</p>
+                    <p><strong>RED FLAG:</strong> NO $100 SPOUCHER FOR GROUP VIRTUAL CONSULTS</p>
+                </div>
+            </div>
+            <div class="script-section">
+                <button class="accordion">Other Scripts</button>
+                <div class="panel">
+                    <h4>1 ON 1 VIRTUAL SCHEDULING/DEPOSIT SCRIPT</h4>
+                    <p>“Now, where are you located?</p>
+                    <p>Great! We see a lot of patients from that area. The first step is a virtual consultation with one of our experts, and they will answer all your questions, provide you with a quote, and break down your payment plan options. Looking at our schedule does ______ or _____ work better for you?</p>
+                    <p>(Offer soonest opening)</p>
+                    <p>Perfect! So, how your consultation will work is we send you a link 30 minutes prior to your appointment. Because our smile consultants schedule an hour out of their day for these consultations, It’s important that everyone shows up for their appointment. For that reason, we do an $89 scheduling deposit that is refunded to you as soon as you click on the link for your consultation. The email I have on file is... is that correct? Great! Would you like to pay that deposit with a credit or debit card?”</p>
+                    <h4>After Scheduling:</h4>
+                    <p>As a reminder, your upcoming session is a virtual consult. When logging on to the link, please ensure you're in a quiet place where you can see the screen without distractions, ideally, without other people around. If you're not in a quiet environment or can't see the screen, the consultant may ask to reschedule the consult.</p>
+                    <h4>GROUP VIRTUAL CONSULT SCHEDULING SCRIPT</h4>
+                    <p>“Typically a consultation with our clinical team does cost 89.00 dollars , but right now for those who qualify we are doing a special group virtual consultation free of charge for today and tomorrow! It is exclusive and by invitation only. You will need a code to enter the consultation. The code will be the email address that you provided! You will need to click on the link, it will then ask for that code and it will accept you into the consultation!"</p>
+                    <h4>Scheduling - SAME DAY or NEXT day is the GOAL</h4>
+                    <p>(If scheduling in the morning)</p>
+                    <p>It looks like several of our times this week are already booked out, but we do actually have times available for today… could we do later this morning or afternoon? (if no… shoot for tomorrow)</p>
+                    <p>(If scheduling in the afternoon)</p>
+                    <p>Several of our times this week are booked out, but we do actually have times available for later today or tomorrow… should we reserve the afternoon consultation for today, or should we get you in tomorrow?</p>
+                    <p>Great, I've got your invitation all set for (day and time) …. We are looking forward to meeting with you! I’ll send you an appointment confirmation via text and email!”</p>
+                    <h4>Reschedule Script</h4>
+                    <p>“Well (name), that 10% is only good for the scheduled date we put you down for, that is what the voucher is made out for, are you sure you can’t come in at your scheduled time?”</p>
+                    <p>They give reason</p>
+                    <p>“Let me talk to my manager to see if there is a way I can make an exception for you. Please hold for a moment”</p>
+                    <p>Wait for a moment</p>
+                    <p>“Great news! He is going to extend the date of your voucher! So you’ll still be able to get that 10% off of your treatment! See you on ——!”</p>
+                    <h4>Script for Lost Sets</h4>
+                    <p>“Hey {Name} this is {Name} with Nuvia Dental Implant Center again. I saw you spoke with {other setter name} the other day and I am calling because {other setter name} is new and I just wanted to make sure he/she helped you in any way you needed. I see that you didn’t set up an appointment, what is holding you back or how can I help you?”</p>
+                    <h4>Unicorn Reschedule script - $89 DEPOSIT REQUIRED</h4>
+                    <p>Okay, (patients name) we did offer you that one time voucher for that appointment, now we understand (health or family emergency) can come up, so our office will accommodate your voucher but we will need to collect an $89 refundable reservation deposit as we will be reserving our office staff and equipment for you a second time. Credit or debit?</p>
+                    <h4>Script for Qualifying Inbound Calls</h4>
+                    <p>Introducing the Questionnaire</p>
+                    <p>Patients typically will call in asking questions about price, insurance, location etc.</p>
+                    <p><strong>ISR:</strong> “We can definitely see what we can do to help out and answer your questions. Before we get too far into these questions did you by chance fill out our candidacy quiz online?”</p>
+                    <p><strong>IF Yes</strong></p>
+                    <p>Proceed by looking up the lead via name, phone number, or email and jump into the discovery phase based on their form.</p>
+                    <p><strong>IF No</strong></p>
+                    <p>“No problem. We actually have a questionnaire that our potential patients fill out to determine whether this procedure would be a good fit for them or not, so I am going to fill out the survey with you right now.”</p>
+                    <p>*Go to nuviasmiles.com and fill out a form for them by asking questions on the quiz.*</p>
+                    <p><strong>IF They Are a Candidate</strong></p>
+                    <p>____, it looks like you are a candidate for this procedure! Congratulations! I now just want to discuss your survey results with you a little bit further…(proceed  like a normal call. Clinical discovery, pain points, value statements, scheduling, etc.)</p>
+                    <p><strong>IF They Are NOT a Candidate</strong></p>
+                    <p>“____, based on your survey results the first thing our doctor wants you to do is watch our webinar video. In that video you will learn everything you need to know about dental implants. I will send you over a link to that webinar video right now.”(send the link of the thank you page)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-container">
+            <div class="group-container group-deposit">
+                <div class="group-header">Deposits</div>
+                <div class="question-box" onclick="toggleAnswer('answer1')">Deposit Objection - Clarify</div>
+                <div id="answer1" class="answer" onclick="toggleAnswer('answer1')">
+                    <p>“So you’re not paying for the consultation. The voucher will cover the cost for you. The $89 is just to hold your spot on the calendar to ensure everyone shows for their appointment and we can do that with a debit or credit card whatever works best for you.”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer2')">Deposit - Scam/Uncomfortable</div>
+                <div id="answer2" class="answer" onclick="toggleAnswer('answer2')">
+                    <p>“Since we are limited in the amount of people we can see each day when someone schedules an appointment and doesn’t show up it is unfair to everyone else that is seeking treatment. When you come in the first thing we do is refund that deposit to you. Most of our patients use a debit or credit card what works best for you?”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer3')">Deposit - Doesn’t Have $89/ No</div>
+                <div id="answer3" class="answer" onclick="toggleAnswer('answer3')">
+                    <p>“Oh I gotcha sometimes when I hear that it may be something else holding you back like you’re nervous to come in for an appointment or you’re nervous about giving your credit card over the phone. Is it one of those?”</p>
+                    <p>IF LEAD RESPONDS THEY DON’T HAVE $89 - *RED FLAG PROTOCOL*</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer4')">Deposit Driving Objection</div>
+                <div id="answer4" class="answer" onclick="toggleAnswer('answer4')">
+                    <p>“Okay no worries I'm just taking some notes for the Dr so I’ll wait until you find a safe spot to pull over.”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer5')">Deposit- Away from Card Objection</div>
+                <div id="answer5" class="answer" onclick="toggleAnswer('answer5')">
+                    <p>“Okay no worries I’m just putting in some notes so you can run and grab that take your time.”</p>
+                </div>
+            </div>
+            <div class="group-container group-callback">
+                <div class="group-header">Callbacks</div>
+                <div class="question-box" onclick="toggleAnswer('answer6')">Call Back - Beginning of the call/Busy (Pre Discovery)</div>
+                <div id="answer6" class="answer" onclick="toggleAnswer('answer6')">
+                    <p>“I can call you back but I'm not sure we can even help you. Tell me real quick how many teeth are you missing?”</p>
+                    <p>REDIRECT BACK TO FLOW WITH A QUESTION</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer7')">Call back - Middle of the call (Mid - Discovery)</div>
+                <div id="answer7" class="answer" onclick="toggleAnswer('answer7')">
+                    <p>“Yeah it will only take a couple more minutes in fact I think you would be a great candidate”</p>
+                    <p>REDIRECT BACK TO FLOW WITH A QUESTION</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer8')">Scheduling- Coordinating a Ride</div>
+                <div id="answer8" class="answer" onclick="toggleAnswer('answer8')">
+                    <p>“How do you normally arrange to go to your doctor appointments?”</p>
+                    <p>LEAD RESPONDS</p>
+                    <p>“Okay I just want to make sure I can get that voucher reserved for you today so let’s go ahead and find a time that will work with your schedule and that way it will give you plenty of time to arrange that ride.”</p>
+                    <p>STILL WON’T SCHEDULE</p>
+                    <p>“Okay I know this is really important to you and we only have a couple of those vouchers left so let’s get you scheduled and then we can move as needed when you get with your ride. So looking back at my calendar would you like to do morning or afternoon?”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer9')">Scheduling- Needs to Check with Work</div>
+                <div id="answer9" class="answer" onclick="toggleAnswer('answer9')">
+                    <p>“What does your work schedule look like this week?”</p>
+                    <p>LEAD RESPONDS</p>
+                    <p>“To accommodate our busier patients we do have availability during lunch time early in the morning or later in the afternoon. What would work best?”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer10')">Schedule- Needs to Check Calendar</div>
+                <div id="answer10" class="answer" onclick="toggleAnswer('answer10')">
+                    <p>“Okay go ahead and pull that up I’m pulling up mine right now as well.”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer11')">Schedule- Needs to Talk to Spouse</div>
+                <div id="answer11" class="answer" onclick="toggleAnswer('answer11')">
+                    <p>“Okay let’s go ahead and find a time that works best for YOU right now. Do mornings or afternoons work best for you?”</p>
+                    <p>Lead Responds with Time</p>
+                    <p>“So let’s schedule the appointment for that time and because we understand how difficult it can be to rearrange schedules we do offer a $100 gift card for actually bringing your spouse with you.”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer12')">Scheduling- Hail Mary for Scheduling Conflicts (spouse ride work etc.)</div>
+                <div id="answer12" class="answer" onclick="toggleAnswer('answer12')">
+                    <p>“Hey I know that arranging calendars can be difficult. You mentioned how much this is affecting your life so I want to reserve this voucher for you and I can do that by just putting you on the calendar and if an emergency comes up we are happy to accommodate. So let’s just get you on the calendar and if anything changes we can adjust.”</p>
+                </div>
+            </div>
+            <div class="group-container group-cost">
+                <div class="group-header">Cost</div>
+                <div class="question-box" onclick="toggleAnswer('answer13')">Beginning of the Call Cost Script</div>
+                <div id="answer13" class="answer" onclick="toggleAnswer('answer13')">
+                    <p>“That is a great question. I just need to get a better understanding of your situation first. How many teeth are you missing?”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer14')">I don't think I can afford it (concern)</div>
+                <div id="answer14" class="answer" onclick="toggleAnswer('answer14')">
+                    <p>“We have seen many patients who felt the same way and it turned out we were able to work something out for them it really just comes down to meeting with our doctor to see what we can do for you.” (redirect back to flow)</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer15')">How much does this cost? (Script)</div>
+                <div id="answer15" class="answer" onclick="toggleAnswer('answer15')">
+                    <p>Deflection 1:</p>
+                    <p>“The cost can vary widely depending on a number of factors including your bone structure the surgery and the materials that will be needed. We would need to get you in for a consultation so we can evaluate your situation get you a quote and go over our payment plan options with you.” (redirect back to flow)</p>
+                    <p>Deflection 2:</p>
+                    <p>“That’s the main reason why we do the consultation is to get you a quote for the procedure. We would just need to get you in to get evaluated and see what your options are.” (redirect back to flow)</p>
+                    <p>Deflection 3:</p>
+                    <p>“Like I said before there are a number of factors that can affect the cost so we don’t really know what it will cost for you but we will definitely address that with you in the consultation after we evaluate your situation.” (redirect back to flow)</p>
+                    <p>Deflection 4:</p>
+                    <p>“May I ask what’s holding you back from coming into a complimentary consultation to get the answers you are looking for?” (redirect back to flow)</p>
+                </div>
+            </div>
+            <div class="group-container group-location">
+                <div class="group-header">Location</div>
+                <div class="question-box" onclick="toggleAnswer('answer17')">Where are you located?</div>
+                <div id="answer17" class="answer" onclick="toggleAnswer('answer17')">
+                    <p>“We have centers across the US! Where are you located?”</p>
+                    <p>LEAD RESPONDS</p>
+                    <p>“Great we see patients from that area all the time!” (redirect back to flow)</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer18')">I live too far away (Less than 3 hours away)</div>
+                <div id="answer18" class="answer" onclick="toggleAnswer('answer18')">
+                    <p>“We have patients travel in from other states and even other countries and they do this because we eliminate up to 15 appointments and give you your permanent set of teeth in 24 hours. It’s 100% worth the trip and with the voucher we are giving out today it will cover the cost of the consultation.” (REDIRECT BACK TO FLOW)</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer19')">I live too far away (More than 3 hours away)</div>
+                <div id="answer19" class="answer" onclick="toggleAnswer('answer19')">
+                    <p>“We have patients travel in from other states and even other countries and they do this because we eliminate up to 15 appointments and give you your permanent set of teeth in 24 hours. At other implant centers you typically get a temporary denture the day of surgery which are bulky hard to talk with and breaks up to 40% of the time. It’s 100% worth the trip. For patients that live too far to travel for their consultation we set up a virtual consultation and will talk to you more about “potential travel accommodations.”</p>
+                </div>
+            </div>
+            <div class="group-container group-medical">
+                <div class="group-header">Medical</div>
+                <div class="question-box" onclick="toggleAnswer('answer16')">Does Nuvia take dental insurance? (Insurance Script)</div>
+                <div id="answer16" class="answer" onclick="toggleAnswer('answer16')">
+                    <p>Deflection 1:</p>
+                    <p>“Insurance companies view dental implants as a cosmetic procedure so they help very little. But we do have a voucher that gives you 10% off any treatment you decide to move forward with which is better than anything your insurance would cover anyway.” (redirect back to flow)</p>
+                    <p>Deflection 2:</p>
+                    <p>What we see the most is that it might help up to $2000 so just bring it in with you and we can go from there. (redirect back to flow)</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer21')">Do you do Single Implants? - DO NOT PROVOKE</div>
+                <div id="answer21" class="answer" onclick="toggleAnswer('answer21')">
+                    <p>“Here at Nuvia we focus on full mouth restorations. That being said we can see how we can help you.” (redirect with clinical question)</p>
+                    <p>If brought up again and patient states they only need single implants DO NOT SET</div>
+                <div class="question-box" onclick="toggleAnswer('answer22')">Addressing Medical Questions (Script)</div>
+                <div id="answer22" class="answer" onclick="toggleAnswer('answer22')">
+                    <p>“That’s a great question. We have treated many patients with various conditions and have learned it is very important for us to get a complete history of your situation. When you come in for your consultation we will review all of that information with you.”</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer23')">Don’t the implants need to heal before you attach the prosthetic?</div>
+                <div id="answer23" class="answer" onclick="toggleAnswer('answer23')">
+                    <p>“That’s a great question. They will be able to answer that question for you in great detail in the consultation.” (Redirect back to flow)</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer24')">What Materials Are Used?</div>
+                <div id="answer24" class="answer" onclick="toggleAnswer('answer24')">
+                    <p>“That’s a great question the clinical team is best qualified to answer that kind of question for you during your consultation.” (Redirect back to flow)</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer25')">How can you do permanent teeth in 24 hours? (or any other prying clinical question)</div>
+                <div id="answer25" class="answer" onclick="toggleAnswer('answer25')">
+                    <p>“That’s a great question the clinical team is best qualified to answer that kind of question for you during your consultation.” (Redirect back to flow)</p>
+                </div>
+            </div>
+            <div class="group-container group-general">
+                <div class="group-header">General Rules</div>
+                <div class="question-box" onclick="toggleAnswer('answer26')">Red Flags</div>
+                <div id="answer26" class="answer" onclick="toggleAnswer('answer26')">
+                    <p>Patients with an allergy to metal (Titanium)</p>
+                    <p>Titanium Allergy Script:</p>
+                    <p>“We use medical grade titanium here at Nuvia are you able to have medical grade titanium?”</p>
+                    <p>IF ANSWER IS NO DO NOT SET</p>
+                    <p>Response to any other allergy:</p>
+                    <p>“That’s a great question I know we have different methods and protocols for this but really the best people to answer these questions is the clinical team during the consult.” (REDIRECT BACK TO FLOW)</p>
+                    <p>Cancer patients undergoing treatment- DOES NOT INCLUDE PATIENTS IN REMISSION</p>
+                    <p>Medicaid or Homeless- DOES NOT INCLUDE MEDICARE</p>
+                    <p>Age- If the patient is under the age of 22 DO NOT SET</p>
+                </div>
+                <div class="question-box" onclick="toggleAnswer('answer27')">DO NOT SAY DO NOT DO LIST</div>
+                <div id="answer27" class="answer" onclick="toggleAnswer('answer27')">
+                    <p>Do Not Say</p>
+                    <p>“Do you want to come in?”</p>
+                    <p>“Let me know”</p>
+                    <p>“When works for you?”</p>
+                    <p>“Well you could wait until this gets bad enough or just come in for the consult”</p>
+                    <p>“Do you have a spouse that is coming with you” (Before offering Spoucher)</p>
+                    <p>Do not ask if they are looking for single implants</p>
+                    <p>“Where are you located? I am just making sure you’re not too far”</p>
+                    <p>“I won’t charge the card it’s just a hold”</p>
+                    <p>"You can just stop by and get some information"<p>
+                    <p>"ON UNICORN or Reg Script we can never say - I have a special and the consult is free - NEVER"<p>
+                    <p>Do Not Do</p>
+                    <p>Do Not cover pricing over the phone in any manner. ( only exception is if Medicaid is mentioned and we can give the monthly cost range and that is all)<p>
+                    <p>Do not waive deposits- 2 strike rule</p>
+                    <p>Do not set leads who don't have $89 but first use the appropriate rebuttal to ensure this is true and not just a smoke screen</p>
+                    <p>Calls cannot exceed 15 minutes</p>
+                    <p>Do not ask if prospects are looking for single implants</p>
+                    <p>Don’t answer your own questions</p>
+                    <p>Don’t ask close ended questions</p>
+                    <p>Do not use loose reschedule language after the set. Example: “If anything comes up just call and let us know and we can get you rescheduled”</p>
+                    <p>Do not schedule patients with no quiz- inbound or outbound</p>
+                    <p>Do not disqualify a patient on the call unless it’s a red flag</p>
+                    <p>Do not refer prospects to another Drs office</p>
+                    <p>Do not mention Distance</p>
+                    <p>Do not offer another center or virtual if the prospect does bring it up</p>
+                    <p>Materials - Zirconia Titanium ceramic etc</p>
+                    <p>We don’t talk about clinical questions</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="record-container">
+            <button class="record-button" id="start-recording" style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Start Recording</button>
+            <button class="record-button" id="stop-recording" disabled style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Stop Recording</button>
+            <button class="record-button" id="save-recording" disabled style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Save Recording</button>
+            <button class="record-button" id="load-recording" style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Load Recording</button>
+            <button class="record-button" id="clear-recording" disabled style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Clear Recording</button>
+            <audio id="audio-playback" controls></audio>
+            <div id="volume-bar">
+                <div id="volume-level"></div>
+            </div>
+        </div>
+
+        <div class="call-notes-container">
+            <label for="call-notes">Call Notes</label>
+            <textarea id="call-notes"></textarea>
+            <button onclick="copyCallNotes()">Copy</button>
+            <button onclick="clearCallNotes()">Clear</button>
+            <button onclick="timestampCallNotes()">Timestamp</button>
+        </div>
+
+        <div class="counter-container">
+            <div class="counter">
+                <p>Answers</p>
+                <p id="answers-count">0</p>
+                <button class="counter-button" onclick="incrementCounter('answers-count')">Up</button>
+                <button class="counter-button" onclick="decrementCounter('answers-count')">Down</button>
+                <button class="counter-button" onclick="resetCounter('answers-count')">Reset</button>
+            </div>
+            <div class="counter">
+                <p>Sets</p>
+                <p id="sets-count">0</p>
+                <button class="counter-button" onclick="incrementCounter('sets-count')">Up</button>
+                <button class="counter-button" onclick="decrementCounter('sets-count')">Down</button>
+                <button class="counter-button" onclick="resetCounter('sets-count')">Reset</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleAnswer(id) {
+            var answer = document.getElementById(id);
+            var questionBox = document.querySelector(".question-box[onclick*='" + id + "']");
+            var answers = document.getElementsByClassName("answer");
+
+            if (answer.style.display === "none" || answer.style.display === "") {
+                for (var i = 0; i < answers.length; i++) {
+                    answers[i].style.display = "none";
+                }
+                answer.style.display = "block";
+                document.body.classList.add("active-answer");
+                questionBox.classList.add("active");
+            } else {
+                answer.style.display = "none";
+                document.body.classList.remove("active-answer");
+                questionBox.classList.remove("active");
+            }
+        }
+
+        function incrementCounter(id) {
+            var counter = document.getElementById(id);
+            counter.innerText = parseInt(counter.innerText) + 1;
+        }
+
+        function decrementCounter(id) {
+            var counter = document.getElementById(id);
+            var count = parseInt(counter.innerText);
+            if (count > 0) {
+                counter.innerText = count - 1;
+            }
+        }
+
+        function resetCounter(id) {
+            var counter = document.getElementById(id);
+            counter.innerText = 0;
+        }
+
+        function toggleScript() {
+            var scriptContainer = document.getElementById('script-container');
+            if (scriptContainer.style.display === "none" || scriptContainer.style.display === "") {
+                scriptContainer.style.display = "flex";
+            } else {
+                scriptContainer.style.display = "none";
+            }
+        }
+
+        function copyCallNotes() {
+            var callNotes = document.getElementById("call-notes");
+            callNotes.select();
+            document.execCommand("copy");
+        }
+
+        function clearCallNotes() {
+            document.getElementById("call-notes").value = "";
+        }
+
+        function timestampCallNotes() {
+            var callNotes = document.getElementById("call-notes");
+            var now = new Date();
+            callNotes.value += `\n[${now.toLocaleDateString()} ${now.toLocaleTimeString()}] `;
+        }
+
+        function scrollToSection(sectionId) {
+            var scriptContainer = document.getElementById('script-container');
+            var section = document.getElementById(sectionId);
+            scriptContainer.scrollTo({
+                top: section.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const timeString = now.toLocaleTimeString();
+            const dateString = now.toLocaleDateString(undefined, options);
+            document.getElementById('datetime').innerText = `${dateString} ${timeString}`;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        async function getAudioStream() {
+            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            return audioStream;
+        }
+
+        async function getSystemAudioStream() {
+            const displayMediaStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            const audioTracks = displayMediaStream.getAudioTracks();
+            return new MediaStream(audioTracks);
+        }
+
+        async function startRecording() {
+            const audioStream = await getAudioStream();
+            const systemAudioStream = await getSystemAudioStream();
+
+            const combinedStream = new MediaStream([
+                ...audioStream.getTracks(),
+                ...systemAudioStream.getTracks()
+            ]);
+
+            mediaRecorder = new MediaRecorder(combinedStream);
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                const url = URL.createObjectURL(blob);
+                audioPlayback.src = url;
+                saveButton.disabled = false;
+            };
+
+            mediaRecorder.start();
+            startButton.disabled = true;
+            stopButton.disabled = false;
+            clearButton.disabled = false;
+        }
+
+        const startButton = document.getElementById('start-recording');
+        const stopButton = document.getElementById('stop-recording');
+        const saveButton = document.getElementById('save-recording');
+        const loadButton = document.getElementById('load-recording');
+        const clearButton = document.getElementById('clear-recording');
+        const audioPlayback = document.getElementById('audio-playback');
+        const volumeBar = document.getElementById('volume-bar');
+        const volumeLevel = document.getElementById('volume-level');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        startButton.addEventListener('click', startRecording);
+
+        stopButton.addEventListener('click', () => {
+            mediaRecorder.stop();
+            startButton.disabled = false;
+            stopButton.disabled = true;
+        });
+
+        saveButton.addEventListener('click', () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'recording.webm';
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        loadButton.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'audio/*';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const url = URL.createObjectURL(file);
+                audioPlayback.src = url;
+                audioPlayback.play();
+            };
+            input.click();
+        });
+
+        clearButton.addEventListener('click', () => {
+            recordedChunks = [];
+            audioPlayback.src = '';
+            clearButton.disabled = true;
+        });
+
+        function visualizeVolume() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                requestAnimationFrame(visualizeVolume);
+            }
+            analyser.getByteFrequencyData(dataArray);
+            let max = Math.max(...dataArray);
+            volumeLevel.style.width = (max / 255) * 100 + '%';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var accordions = document.getElementsByClassName("accordion");
+            for (var i = 0; i < accordions.length; i++) {
+                accordions[i].addEventListener("click", function () {
+                    this.classList.toggle("active");
+                    var panel = this.nextElementSibling;
+                    if (panel.style.display === "block") {
+                        panel.style.display = "none";
+                    } else {
+                        panel.style.display = "block";
+                    }
+                });
+            }
+        });
+
+        function applyCustomColors() {
+            const root = document.documentElement;
+
+            const backgroundColor = document.getElementById('background-color').value;
+            const textColor = document.getElementById('text-color').value;
+            const headingColor = document.getElementById('heading-color').value;
+            const questionBoxBg = document.getElementById('question-box-bg').value;
+            const questionBoxColor = document.getElementById('question-box-color').value;
+            const activeQuestionBoxBg = document.getElementById('active-question-box-bg').value;
+            const answerBg = document.getElementById('answer-bg').value;
+
+            root.style.setProperty('--background-color', backgroundColor);
+            root.style.setProperty('--text-color', textColor);
+            root.style.setProperty('--heading-color', headingColor);
+            root.style.setProperty('--question-box-bg', questionBoxBg);
+            root.style.setProperty('--question-box-color', questionBoxColor);
+            root.style.setProperty('--active-question-box-bg', activeQuestionBoxBg);
+            root.style.setProperty('--answer-bg', answerBg);
+        }
+
+        function toggleCustomizationPanel() {
+            const panel = document.getElementById('customization-panel');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
